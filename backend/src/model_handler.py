@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Model:
 
     def __init__(self):
-        with open("./models/model_pl_wrapper.pckl", "rb") as f:
+        with open("../models/model_pl_wrapper.pckl", "rb") as f:
             self.model_wrapper = dill.load(f)
 
         self.feature_names = [

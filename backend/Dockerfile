@@ -8,7 +8,10 @@ COPY requirements.txt /app
 # Install any dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY . /app
+COPY src/ ./src
+COPY models/ ./models
+
+WORKDIR /app/src
 
 ENTRYPOINT [ "python3" ]
 
