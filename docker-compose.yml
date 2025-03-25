@@ -1,0 +1,19 @@
+services:
+  flask:
+    build: ./backend
+    container_name: ml-proj-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+
+  react:
+    build: ./frontend
+    container_name: ml-proj-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - ./frontend/node_modules:/app/node_modules
+    depends_on:
+      - flask
