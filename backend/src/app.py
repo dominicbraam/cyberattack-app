@@ -17,7 +17,7 @@ CORS(app)
 def get_features_data():
     """Return the model's feature data."""
     model = Model()
-    return jsonify(model.features_data)
+    return jsonify(model.features_data_base)
 
 
 @app.route("/get_pred", methods=["POST"])
@@ -33,8 +33,11 @@ def make_single_pred():
         return jsonify({"error": validation.get("msg")}), 400
 
     df = pd.DataFrame([features_data])
-    pred = model.make_prediction(df)
-    return jsonify(pred.to_dict(orient="records"))
+    df_assembled_features = model.assemble_features(df)
+    pred = model.make_prediction(df_assembled_features)
+
+    base_columns = [col for col in pred.columns if "|" not in col]
+    return jsonify(pred[base_columns].to_dict(orient="records"))
 
 
 @app.route("/get_pred_file", methods=["POST"])
@@ -56,8 +59,11 @@ def make_file_pred():
         if not validation.get("is_valid", False):
             return jsonify({"error": validation.get("msg")}), 400
 
-        pred = model.make_prediction(df)
-        return jsonify(pred.to_dict(orient="records"))
+        df_assembled_features = model.assemble_features(df)
+        pred = model.make_prediction(df_assembled_features)
+
+        base_columns = [col for col in pred.columns if "|" not in col]
+        return jsonify(pred[base_columns].to_dict(orient="records"))
 
     except Exception as e:
         logging.exception(e)

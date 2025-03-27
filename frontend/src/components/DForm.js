@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Button, Card, FloatingLabel, Form, Row, Spinner } from 'react-bootstrap';
 import api from '../api/preds';
 import startCase from 'lodash/startCase';
-import { Button, Card, FloatingLabel, Form, Row, Spinner } from 'react-bootstrap';
 
 const DForm = ({ onSubmit }) => {
     const [formFeaturesData, setFormFeaturesData] = useState({});
@@ -16,13 +16,7 @@ const DForm = ({ onSubmit }) => {
                 console.log(response.data)
                 setLoading(false);
             } catch (e) {
-                if (e.response) {
-                    console.log(e.response.data);
-                    console.log(e.response.status);
-                    console.log(e.response.headers);
-                } else {
-                    console.log(`Error: ${e.message}`)
-                }
+                console.error(e)
             }
         }
         getFeaturesData();
