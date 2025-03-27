@@ -1,43 +1,35 @@
-import logo from './logo.svg';
 import './App.css';
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import api from './api/preds';
-import Form from './components/Form';
+import DForm from './components/DForm';
 import FileUpload from './components/FileUpload';
-import Results from './components/Results';
+import ResultsModal from './components/ResultsModal';
+import { Container, Nav, Alert } from 'react-bootstrap';
+
 
 function App() {
 
+    const [mode, setMode] = useState('single');
     const [pred, setPred] = useState([])
+    const [error, setError] = useState('')
+    const [showResults, setShowResults] = useState(false);
+    const [showError, setShowError] = useState(false);
 
-    //useEffect(() => {
-    //    const getPreds = async () => {
-    //        try {
-    //            const response = await api.get('/');
-    //            setPred(response.data);
-    //            console.log(response.data);
-    //        } catch (e) {
-    //            if (e.response) {
-    //                console.log(e.response.data);
-    //                console.log(e.response.status);
-    //                console.log(e.response.headers);
-    //            } else {
-    //                console.log(`Error: ${e.message}`)
-    //            }
-    //        }
-    //    }
-    //
-    //    getPreds();
-    //}, [])
+    let errorMsg = "An unexpected error occurred."
 
     const handleFormSubmit = async (features) => {
+
         try {
             const response = await api.post('/get_pred', { features_data: features });
             setPred(response.data);
+            setShowResults(true)
         } catch (error) {
             console.error('Error:', error);
-            setPred('An error occurred. Try again.');
+            if (error.response && error.response.data && error.response.data.error) {
+                errorMsg = error.response.data.error;
+            }
+            setError(errorMsg);
+            setShowError(true);
         }
     };
 
@@ -46,31 +38,64 @@ function App() {
         formData.append('file', file);
 
         try {
-            const response = await api.post('/get_pred_from_file', formData, {
+            const response = await api.post('/get_pred_file', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
             setPred(response.data);
+            setShowResults(true);
         } catch (error) {
-            console.error('Error uploading file:', error);
-            setPred('An error occurred. Try again.');
+            console.error('Error:', error);
+            if (error.response && error.response.data && error.response.data.error) {
+                errorMsg = error.response.data.error;
+            }
+            setError(errorMsg);
+            setShowError(true)
         }
     };
 
-
     return (
-        <div className="App">
-            <header className="App-header">
-                <h1>Cyberattack Predictor</h1>
-                <Form onSubmit={handleFormSubmit} />
-                <hr />
-                <FileUpload onUpload={handleFileUpload} />
-                <hr />
-                {pred && <Results result={pred} />}
+        <div className='App'>
+            <header className='App-header'>
+                <div className='header-title'>
+                    <h1>Cyberattack Predictor</h1>
+                    <p>Predicts cyberattack TYPE.</p>
+                </div>
+
+                <Container className='mt-3 mb-3'>
+
+                    {showError &&
+                        <Alert variant='danger' className='mt-4'>{error}</Alert>
+                    }
+
+                    <Nav fill variant='tabs' defaultActiveKey='single' className=''>
+                        <Nav.Item>
+                            <Nav.Link onClick={() => setMode('single')} aria-current='page' eventKey='single'>Single Prediction</Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                            <Nav.Link onClick={() => setMode('file')} eventKey='file-upload'>File Prediction</Nav.Link>
+                        </Nav.Item>
+                    </Nav>
+
+                    {mode === 'single' ? <DForm onSubmit={handleFormSubmit} /> : <FileUpload onUpload={handleFileUpload} />}
+
+                    {showResults && (
+                        < ResultsModal
+                            show={showResults}
+                            results={pred}
+                            handleClose={() => {
+                                setShowError(false);
+                                setShowResults(false);
+                                setPred([]);
+                            }}
+                        />
+                    )}
+                </Container>
             </header >
-        </div>
+        </div >
     );
-}
+
+};
 
 export default App;
