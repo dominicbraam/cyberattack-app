@@ -1,8 +1,8 @@
 import React from 'react';
-import { Button, Modal, Table } from 'react-bootstrap';
+import { Button, Modal, Spinner, Table } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
 
-const ResultsModal = ({ results, show, handleClose }) => {
+const ResultsModal = ({ results, show, handleClose, loading }) => {
 
     const headers = Object.keys(results[0]);
     const orderedHeaders = ['attack_type', ...headers.filter(col => col !== 'attack_type')];
@@ -41,12 +41,22 @@ const ResultsModal = ({ results, show, handleClose }) => {
                 <Modal.Title>Prediction</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {results.length > modal_max_items && (
-                    <p style={{ textAlign: 'center', marginBottom: '10px', fontStyle: 'italic' }}>
-                        Results limited. Download CSV for full results.
-                    </p>
+                {loading ? (
+                    <div class='d-flex justify-content-center  align-items-center mt-5'>
+                        <Spinner animation='border' variant='light' />
+                    </div>
+                ) : (
+                    <>
+                        {
+                            results.length > modal_max_items && (
+                                <p style={{ textAlign: 'center', marginBottom: '10px', fontStyle: 'italic' }}>
+                                    Results limited. Download CSV for full results.
+                                </p>
+                            )
+                        }
+                        {renderTable()}
+                    </>
                 )}
-                {renderTable()}
             </Modal.Body>
             <Modal.Footer>
                 <Button variant='danger' onClick={handleClose}>Close</Button>

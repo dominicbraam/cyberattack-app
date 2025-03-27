@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/preds';
-
+import startCase from 'lodash/startCase';
 import { Button, Card, FloatingLabel, Form, Row, Spinner } from 'react-bootstrap';
 
 const DForm = ({ onSubmit }) => {
@@ -86,10 +86,18 @@ const DForm = ({ onSubmit }) => {
         }
     };
 
+    const humanizeField = (fieldName) => {
+        const abbreviations = ['OS'];
+        const formatted = startCase(fieldName);
+        return formatted.split(' ').map(word =>
+            abbreviations.includes(word.toUpperCase()) ? word.toUpperCase() : word
+        ).join(' ');
+    };
+
     if (loading) {
         return (
-            <div class='d-flex justify-content-center mt-5'>
-                <Spinner animation='border' variant='secondary' />
+            <div class='d-flex justify-content-center  align-items-center mt-5'>
+                <Spinner animation='border' variant='light' />
             </div>
         );
     };
@@ -100,7 +108,7 @@ const DForm = ({ onSubmit }) => {
                 <Form onSubmit={handleSubmit}>
                     <Row className='g-2'>
                         {Object.entries(formFeaturesData).map(([name, config]) => (
-                            <FloatingLabel for={name} label={name} className='col-md-3 mt-3'>
+                            <FloatingLabel for={name} label={humanizeField(name)} className='col-md-3 mt-3'>
                                 {renderField(name, config)}
                             </FloatingLabel>
                         ))}
