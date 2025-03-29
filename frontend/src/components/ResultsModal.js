@@ -25,7 +25,13 @@ const ResultsModal = ({ results, show, handleClose, loading }) => {
                             <tr key={rowIndex}>
                                 {orderedHeaders.map(header => (
                                     <td key={header}>
-                                        {header === 'attack_type' ? <strong>{row[header]}</strong> : row[header]}
+                                        {header === 'attack_type' ? (
+                                            <strong>{row[header]}</strong>
+                                        ) : typeof row[header] === 'boolean' ? (
+                                            row[header].toString()
+                                        ) : header === 'timestamp' && row[header] ? (
+                                            new Date(row[header]).toISOString().split('.')[0]
+                                        ) : row[header]}
                                     </td>
                                 ))}
                             </tr>
@@ -61,7 +67,10 @@ const ResultsModal = ({ results, show, handleClose, loading }) => {
             <Modal.Footer>
                 <Button variant='danger' onClick={handleClose}>Close</Button>
                 <CSVLink
-                    data={results}
+                    data={results.map(row => ({
+                        ...row,
+                        timestamp: row.timestamp ? new Date(row.timestamp).toISOString().split('.')[0] : row.timestamp
+                    }))}
                     headers={csvHeaders}
                     filename='cyberattack_prediction.csv'
                     className='btn btn-action'

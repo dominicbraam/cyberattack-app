@@ -17,7 +17,12 @@ CORS(app)
 def get_features_data():
     """Return the model's feature data."""
     model = Model()
-    return jsonify(model.features_data_base)
+    resonse_data = {
+        "features_base": model.features_data_base,
+        "features_additional": model.features_additional,
+        "features_derived": model.features_derived,
+    }
+    return jsonify(resonse_data)
 
 
 @app.route("/get_pred", methods=["POST"])
@@ -26,18 +31,9 @@ def make_single_pred():
 
     data = request.get_json()
     features_data = data.get("features_data")
-
-    model = Model()
-    validation = model.validate_df(features_data)
-    if not validation.get("is_valid", False):
-        return jsonify({"error": validation.get("msg")}), 400
-
     df = pd.DataFrame([features_data])
-    df_assembled_features = model.assemble_features(df)
-    pred = model.make_prediction(df_assembled_features)
 
-    base_columns = [col for col in pred.columns if "|" not in col]
-    return jsonify(pred[base_columns].to_dict(orient="records"))
+    return get_pred_result(df)
 
 
 @app.route("/get_pred_file", methods=["POST"])
@@ -53,21 +49,30 @@ def make_file_pred():
 
     try:
         df = pd.read_csv(file)
-
-        model = Model()
-        validation = model.validate_df(df)
-        if not validation.get("is_valid", False):
-            return jsonify({"error": validation.get("msg")}), 400
-
-        df_assembled_features = model.assemble_features(df)
-        pred = model.make_prediction(df_assembled_features)
-
-        base_columns = [col for col in pred.columns if "|" not in col]
-        return jsonify(pred[base_columns].to_dict(orient="records"))
-
     except Exception as e:
         logging.exception(e)
         return jsonify({"error": "Internal Server Error"}), 500
+
+    return get_pred_result(df)
+
+
+def get_pred_result(df):
+
+    model = Model()
+
+    validation_input = model.validate_df(df)
+    if not validation_input.get("is_valid", False):
+        return jsonify({"error": validation_input.get("msg")}), 400
+
+    df_assembled_features = model.assemble_features(df)
+    validation_derived = model.validate_df(df_assembled_features, True)
+    if not validation_derived.get("is_valid", False):
+        return jsonify({"error": validation_derived.get("msg")}), 400
+
+    pred = model.make_prediction(df_assembled_features)
+
+    base_columns = [col for col in pred.columns if "|" not in col]
+    return jsonify(pred[base_columns].to_dict(orient="records"))
 
 
 if __name__ == "__main__":

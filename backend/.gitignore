@@ -1,5 +1,6 @@
 # models
 models/*.pckl
+models/*.pckl.bk
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
