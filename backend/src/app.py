@@ -38,7 +38,7 @@ def make_single_pred():
 
 @app.route("/get_pred_file", methods=["POST"])
 def make_file_pred():
-    """Endpoint. Reads file, does file validation, responds with prediction."""
+    """Gets file data, does file validation, responds with prediction."""
 
     file = request.files["file"]
     filename = file.filename
@@ -57,7 +57,16 @@ def make_file_pred():
 
 
 def get_pred_result(df):
+    """
+    Helper function used by endpoints to validate DataFrame, make prediction
+    and return prediction.
 
+    Args:
+        df (): pd.DataFrame
+
+    Returns:
+        json
+    """
     model = Model()
 
     validation_input = model.validate_df(df)

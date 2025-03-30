@@ -3,11 +3,14 @@ import { Button, Modal, Spinner, Table } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
 
 const ResultsModal = ({ results, show, handleClose, loading }) => {
-
+    /**
+     * Modal that holds table with results.
+     */
     const headers = Object.keys(results[0]);
+    // puts attack_type (prediction) column first
     const orderedHeaders = ['attack_type', ...headers.filter(col => col !== 'attack_type')];
     const csvHeaders = orderedHeaders.map(header => ({ label: header, key: header }));
-    const modal_max_items = 7;
+    const modal_max_items = 7; // modal list limit
 
     const renderTable = () => {
         return (
@@ -28,8 +31,10 @@ const ResultsModal = ({ results, show, handleClose, loading }) => {
                                         {header === 'attack_type' ? (
                                             <strong>{row[header]}</strong>
                                         ) : typeof row[header] === 'boolean' ? (
+                                            // converts bool to string; otherwise it is blank
                                             row[header].toString()
                                         ) : header === 'timestamp' && row[header] ? (
+                                            // React/JS default date it long and terrible :/
                                             new Date(row[header]).toISOString().split('.')[0]
                                         ) : row[header]}
                                     </td>

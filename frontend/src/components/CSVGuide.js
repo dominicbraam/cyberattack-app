@@ -3,6 +3,10 @@ import { Accordion, ListGroup, Spinner } from 'react-bootstrap';
 import api from '../api/preds';
 
 function CSVGuide() {
+    /**
+     * Instruction component used on file upload page.
+     * Generates accordion with all required fields and its constraints if any.
+     */
     const [formFeaturesData, setFormFeaturesData] = useState({});
     const [loading, setLoading] = useState(true);
 
@@ -10,11 +14,11 @@ function CSVGuide() {
         const getFeaturesData = async () => {
             try {
                 const response = await api.get('/get_features_data');
-                setFormFeaturesData(response.data)
-                console.log(response.data)
+                setFormFeaturesData(response.data);
+                console.log(response.data);
                 setLoading(false);
             } catch (e) {
-                console.error(e)
+                console.error(e);
             }
         }
         getFeaturesData();
@@ -41,6 +45,7 @@ function CSVGuide() {
         );
     };
 
+    // filtered fields - no derived
     const requiredFields = computeRequiredFields(formFeaturesData);
 
     return (

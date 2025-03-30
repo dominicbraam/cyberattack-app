@@ -18,6 +18,8 @@ class Model:
         self.features_data_base, self.composite_map = (
             self.get_base_features_data()
         )
+
+        # any additional features that will be used to derive other features
         self.features_additional = {
             "timestamp": {"type": "datetime"},
             "ip_address_source": {"type": "text"},
@@ -35,6 +37,9 @@ class Model:
                 "values": {"min": 64, "max": 1500},
             },
         }
+
+        # dict to store derived features. they are not directly taken from the
+        # user but rather computed based on other features
         self.features_derived = {
             # dates
             "hour": {"from": "timestamp"},
@@ -79,7 +84,15 @@ class Model:
         }
 
     def make_prediction(self, user_data):
-        """Generate predictions and insert the y var into the data."""
+        """
+        Generate predictions and insert into DataFrame.
+
+        Args:
+            user_data (): pd.DataFrame
+
+        Returns:
+            pd.DataFrame
+        """
 
         dfx = pd.DataFrame(user_data)
         logging.info(f"making prediction on df with shape: {dfx.shape}")
@@ -97,6 +110,7 @@ class Model:
         """
         Splits composite features (keys with '|') into base features.
         Uses sets to ensure unique values only.
+
         Returns
             tuple of (base_features, composite_map)
         """
@@ -106,6 +120,7 @@ class Model:
             parts = comp_name.split("|")
             if len(parts) > 1 and cfg["type"] == "categorical":
                 composite_map[comp_name] = parts
+
                 for idx, field in enumerate(parts):
                     if field not in base:
                         base[field] = {"type": cfg["type"], "values": set()}
@@ -117,9 +132,11 @@ class Model:
                 base[comp_name] = cfg.copy()
                 if cfg["type"] == "categorical":
                     base[comp_name]["values"] = set(cfg["values"])
+
         for key, data in base.items():
             if data["type"] == "categorical":
                 base[key]["values"] = list(data["values"])
+
         return base, composite_map
 
     def assemble_features(self, df):
@@ -127,17 +144,33 @@ class Model:
         Assembles composite features from base features using the stored
         composite_map.
         This creates concatenated fields for the model to understand.
+
+        Args:
+            df (): pd.DataFrame
+
+        Returns:
+            pd.DataFrame
         """
         df = self.compute_derived_features(df)
         for composite, base_fields in self.composite_map.items():
             df[composite] = df[base_fields].astype(str).agg("|".join, axis=1)
+
         return df
 
     def compute_derived_features(self, df):
-        """Compute all derived features."""
+        """
+        Compute all derived features.
+
+        Args:
+            df (): pd.DataFrame
+
+        Returns:
+            pd.DataFrame
+        """
 
         ip_helper = IPAddressHelper()
 
+        # all time based derivations - from timestamp field
         if "timestamp" in df.columns:
             df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
             df["hour"] = df["timestamp"].dt.hour
@@ -146,16 +179,19 @@ class Model:
             df["year"] = df["timestamp"].dt.year
             df["quarter"] = df["timestamp"].dt.quarter
 
+        # counts all alerts. only counts them if all alerts exist
         alert_fields = self.features_derived["alert_count"]["from"]
         if all(field in df.columns for field in alert_fields):
             df["alert_count"] = df[alert_fields].sum(axis=1)
 
+        # has_system_alert true if any alert is true
         existing_fields = [
             field for field in alert_fields if field in df.columns
         ]
         if existing_fields:
             df["has_system_alert"] = df[existing_fields].any(axis=1)
 
+        # ICMP does not use ports so false whenever it is that
         df["protocol_uses_ports"] = df["protocol"].apply(
             lambda x: False if x == "ICMP" else True
         )
@@ -172,6 +208,8 @@ class Model:
             )
         )
 
+        # for loop helps deligate fields that has both source and destination
+        # information
         for loc in ["source", "destination"]:
             df[f"{loc}_port_bin"] = df[f"port_{loc}"].apply(
                 lambda value: (
@@ -194,10 +232,11 @@ class Model:
 
     def validate_df(self, df, with_derived=False):
         """
-        Validate the input DataFrame against required feature constraints.
+        Validates the input DataFrame against required feature constraints.
 
         Args:
-            df ():
+            df (): pd.DataFrame
+            with_derived (): bool
 
         Returns:
             dict: {'is_valid': bool, 'msg': str}
@@ -211,13 +250,19 @@ class Model:
             self.features_data_base,
             self.features_additional,
         ]
+
         for li in features_form_lists:
             for col_name, col_info in li.items():
+
+                # does validation either on all fields except derived fields
+                # only includes derived fields when with_derived is true
                 if (
                     col_name not in self.features_derived.keys()
                     or with_derived
                 ):
                     if col_name in df.keys():
+
+                        # checks if numeric value is within its constraints
                         if col_info["type"] == "numerical":
                             val_min = col_info["values"]["min"]
                             val_max = col_info["values"]["max"]
@@ -234,6 +279,9 @@ class Model:
                                 msg = f"""
                                 {col_name} value must be within [{val_min},{val_max}]
                                 """
+
+                        # literally only checks if value is an ip address
+                        # really does not do anything else
                         if "ip_address" in col_name:
                             try:
                                 ip_helper = IPAddressHelper()

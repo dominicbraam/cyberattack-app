@@ -5,8 +5,12 @@ import { BsCloudUpload } from 'react-icons/bs';
 import CSVGuide from './CSVGuide';
 
 function FileUpload({ onUpload }) {
+    /**
+     * Handles file upload. Nothing special.
+     */
     const [loading, setLoading] = useState(false);
 
+    // starts processing/calls api on drop instead of using a button to start
     const onDrop = useCallback((acceptedFiles) => {
         if (acceptedFiles.length > 0) {
             setLoading(true);

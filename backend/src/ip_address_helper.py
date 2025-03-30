@@ -4,6 +4,7 @@ import numpy as np
 
 
 class IPAddressHelper:
+    """Manage ip address processing and feature derivation."""
 
     def __init__(self):
         try:
@@ -22,7 +23,22 @@ class IPAddressHelper:
         return ipaddress.ip_address(ip_a).is_private
 
     def add_ip_info(self, option, df, loc):
+        """
+        Args:
+            option (): str
+                Type of info to add; `country` or `asn_id`
+            df (): pd.DataFrame
+                Data from api request
+            loc (): str
+                `source` or `destination`
 
+        Raises:
+            Exception:
+
+        Returns:
+            df
+                Modified DataFrame
+        """
         if option == "country":
             df_helper = self.df_geo
             df_helper_col = "country_code"
@@ -32,6 +48,7 @@ class IPAddressHelper:
         else:
             raise Exception("Not an option.")
 
+        # converts ip address to int for easier processing
         df[f"ip_address_{loc}_int"] = df[f"ip_address_{loc}"].apply(
             self._ip_to_int
         )
@@ -49,7 +66,7 @@ class IPAddressHelper:
             else:
                 cummax_indices[i] = cummax_indices[i - 1]
 
-        # this will match all rows all rows with vals from start_ips.
+        # match all rows all rows with vals from start_ips.
         # there is no upper limit so all rows will be filled.
         indeces = np.searchsorted(
             cummax_ends,
@@ -58,18 +75,20 @@ class IPAddressHelper:
         )
         indeces[indeces == len(end_ips)] = len(end_ips) - 1
         ai = cummax_indices[indeces]
+
         # the solution for the above problem is to create a mask where
         # False will be given if it does not fit with the end_ip too.
         mask = (df[f"ip_address_{loc}_int"].values >= start_ips[ai]) & (
             df[f"ip_address_{loc}_int"].values <= end_ips[ai]
         )
 
+        # use the mask to map the values and fill null values with the mode
         mode_val = df_helper[df_helper_col].mode()[0]
-        matched_values = np.where(
+        df[f"{loc}_{option}"] = np.where(
             mask, df_helper[df_helper_col].values[ai], mode_val
         )
-        df[f"{loc}_{option}"] = matched_values
 
+        # drop unnecessary columns
         df.drop(f"ip_address_{loc}_int", axis=1, inplace=True)
 
         return df

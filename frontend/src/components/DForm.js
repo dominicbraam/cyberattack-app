@@ -4,6 +4,10 @@ import api from '../api/preds';
 import startCase from 'lodash/startCase';
 
 const DForm = ({ onSubmit }) => {
+    /**
+     * Form component for user input.
+     * All fields generated using features from api - applies constraints where necessary.
+     */
     const [formFeaturesData, setFormFeaturesData] = useState({});
     const [requiredFields, setRequiredFields] = useState({});
     const [userInput, setUserInput] = useState({});
@@ -37,7 +41,8 @@ const DForm = ({ onSubmit }) => {
         return { ...filteredBase, ...features_additional };
     };
 
-    // compute and store requiredFields and default userInput once the formFeaturesData loads.
+    // compute and store requiredFields and sets all bool fields to false by default
+    // when the formFeaturesData loads.
     useEffect(() => {
         if (Object.keys(formFeaturesData).length > 0) {
             const fields = computeRequiredFields(formFeaturesData);
@@ -52,6 +57,7 @@ const DForm = ({ onSubmit }) => {
         }
     }, [formFeaturesData]);
 
+    // group fields by type
     const groupedFields = Object.entries(requiredFields).reduce((acc, [name, config]) => {
         const type = config.type;
         if (!acc[type]) acc[type] = [];
@@ -72,6 +78,7 @@ const DForm = ({ onSubmit }) => {
         e.preventDefault();
         console.log('Submitted form data:', userInput);
         setPredictionLoading(true);
+        // async on submit so that loading animation can be shown
         try {
             await onSubmit(userInput);
         } catch (error) {
@@ -144,6 +151,8 @@ const DForm = ({ onSubmit }) => {
         }
     };
 
+    // turns field names into human readable formatted. abbreviations capitalized
+    // 'one_two' to 'One Two'
     const humanizeField = (fieldName) => {
         const abbreviations = ['IP', 'OS'];
         const formatted = startCase(fieldName);
@@ -170,6 +179,7 @@ const DForm = ({ onSubmit }) => {
                             return (
                                 <>
                                     {groupedFields[type].map(({ name, config }) => {
+                                        // load bool field separately. honestly, it looks weird with floating labels
                                         if (config.type === 'bool') {
                                             return (
                                                 <div key={name} className="col-md-3 mt-3 text-start">

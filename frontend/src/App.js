@@ -15,14 +15,18 @@ function App() {
     const [showResults, setShowResults] = useState(false);
     const [showError, setShowError] = useState(false);
 
+    // default error message
     let errorMsg = "An unexpected error occurred."
 
     const handleFormSubmit = async (features) => {
-
+        /**
+         * Runs from form submission only.
+         * Makes request to get prediction from api based on user input.
+         */
         try {
             const response = await api.post('/get_pred', { features_data: features });
             setPred(response.data);
-            setShowResults(true)
+            setShowResults(true);
         } catch (error) {
             console.error('Error:', error);
             if (error.response && error.response.data && error.response.data.error) {
@@ -34,6 +38,10 @@ function App() {
     };
 
     const handleFileUpload = async (file) => {
+        /**
+         * Runs only when file is submitted.
+         * Makes request to get prediction from api based on file upload.
+         */
         const formData = new FormData();
         formData.append('file', file);
 
@@ -55,6 +63,7 @@ function App() {
         }
     };
 
+    // base page for entire app
     return (
         <div className='App'>
             <header className='App-header'>
