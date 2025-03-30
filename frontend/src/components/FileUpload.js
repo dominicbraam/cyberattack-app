@@ -17,7 +17,6 @@ function FileUpload({ onUpload }) {
             Promise.resolve(onUpload(acceptedFiles[0])).finally(() => {
                 setLoading(false);
             });
-            onUpload(acceptedFiles[0]);
         }
     }, [onUpload]);
 
