@@ -13,7 +13,7 @@ This project is dependent on the [cyberattack-model](https://github.com/dominicb
 - Place the model at `./backend/models/model_pl_wrapper.pckl`
 - Place the two transformed datasets, `dbip-asn-transformed.csv` and `dbip-country-transformed.csv` , in the `data/` directory.
 
-## External Datasets
+An external dataset is also required:
 
 - `top-30000-most-popular-tcp-ports-nmap-sorted.csv` from the github repo: [https://github.com/HeckerBirb/top-nmap-ports-csv](https://github.com/HeckerBirb/top-nmap-ports-csv). Expected in the `data/` directory.
 
