@@ -16,3 +16,7 @@ This project is dependent on the [cyberattack-model](https://github.com/dominicb
 ## External Datasets
 
 - `top-30000-most-popular-tcp-ports-nmap-sorted.csv` from the github repo: [https://github.com/HeckerBirb/top-nmap-ports-csv](https://github.com/HeckerBirb/top-nmap-ports-csv). Expected in the `data/` directory.
+
+## Showcase
+
+![cyberattack-app-showcase](https://github.com/user-attachments/assets/1c1b71c8-2447-4b03-8942-6bf50355c7a1)
