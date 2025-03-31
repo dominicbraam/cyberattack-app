@@ -1,17 +1,17 @@
-# ml-proj-web-app
+# Cyber Attack Classification - Web App
 
-This web application is built on React (frontend) and Flask (backend). Docker is used to make it replicatable. Use the following command to run it:
+This web application is built with React for the frontend and Flask for the backend. Docker ensures easy replication. To run the application, use the following command:
 
 ```
 docker compose up
 ```
 
-## Dependent Notice
+## Dependency
 
-This project is dependent on another project that trains the model and requires data generated from it:
+This project is dependent on the [cyberattack-model](https://github.com/dominicbraam/cyberattack-model) project. It exports a model and 2 datasets required by this project:
 
-- The model. It is expected in the following location with name: `./backend/models/model_pl_wrapper.pckl`
-- 2 transformed datasets called `dbip-asn-transformed.csv` and `dbip-country-transformed.csv`. It is expected in the `data/` directory.
+- Place the model at `./backend/models/model_pl_wrapper.pckl`
+- Place the two transformed datasets, `dbip-asn-transformed.csv` and `dbip-country-transformed.csv` , in the `data/` directory.
 
 ## External Datasets
 
